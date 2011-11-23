@@ -1,0 +1,63 @@
+html, body{
+	
+}
+
+h1 {
+	font-size:16px;
+	font-weight:600;
+	line-height:18px;
+	margin:0 auto;
+	padding:10px 0;
+	text-align:center;
+	width:200px;
+}
+
+
+#container {
+	padding:10px;
+}
+
+/* Carousel */
+
+.carousel {
+	border: solid 1px #c0c0c0;
+	height:225px;
+	margin: 0 auto;
+	overflow:hidden;
+	position:relative;
+	width:225px;
+}
+
+.carousel .scroll {
+	overflow: hidden;
+	position: relative;
+	width: 999999em;
+}
+
+.carousel .scroll li {
+	float:left;
+	height:225px;
+	width:225px;	
+}
+
+.previous, .next {
+	width: 36px;
+	height: 100%;
+	position: absolute;
+	cursor: pointer;
+	z-index: 100;
+	top: 0;
+	text-indent:-99999em;
+	opacity:0.3;
+	filter:alpha(opacity=30);
+}
+
+.previous {
+	background:#c0c0c0 url('../images/prevAnim.gif') no-repeat scroll left center;
+	left:0;
+}
+
+.next {
+	background:#c0c0c0 url('../images/nextAnim.gif') no-repeat scroll right center;
+	right:0;
+}

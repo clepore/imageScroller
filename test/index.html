@@ -1,0 +1,62 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+   "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Gallery</title>
+	<link rel="stylesheet" href="styles/reset.min.css" type="text/css" media="screen" title="no title" charset="utf-8">
+	<link rel="stylesheet" href="styles/base.css" type="text/css" media="screen" title="no title" charset="utf-8">
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.2/jquery.min.js"></script> 
+	<script type='text/javascript' src='../scroller.js' charset="utf-8"></script>
+	<script type='text/javascript'>	
+		$(document).ready(function(){
+			$('.my-carousel').scroller({
+				nextButton: $('.my-carousel > a.next'),
+				previousButton: $('.my-carousel > a.previous'),
+				scrollableUl: $('.my-carousel > ul.scroll'),
+				numOfPicsVisible: 1
+			});			
+			
+			$('.my-thumbs').scroller({
+				nextButton: $('.my-thumbs > a.next'),
+				previousButton: $('.my-thumbs > a.previous'),
+				scrollableUl: $('.my-thumbs > ul.scroll'),
+				numOfPicsVisible: 3			
+			});
+		});
+	</script>
+</head>
+<body>
+	<div id="container">
+		<h1>My Gallery</h1>
+		<div class='my-carousel carousel'>	
+			<a href='#' class='previous'>Previous</a>
+			<a href='#' class='next'>Next</a>	
+			<ul class='scroll'>
+				<li><a href=''><img src='images/images1.jpeg'></a></li>
+				<li><a href=''><img src='images/images2.jpeg'></a></li>
+				<li><a href=''><img src='images/images3.jpeg'></a></li>
+				<li><a href=''><img src='images/images4.jpeg'></a></li>
+				<li><a href=''><img src='images/images5.jpeg'></a></li>
+				<li><a href=''><img src='images/images6.jpeg'></a></li>
+				<li><a href=''><img src='images/images7.jpeg'></a></li>
+				<li><a href=''><img src='images/images8.jpeg'></a></li>
+			</ul>		
+		</div>
+		<div class='my-thumbs carousel'>	
+			<a href='#' class='previous'>Previous</a>			
+			<a href='#' class='next'>Next</a>
+			<ul class='scroll'>
+				<li><a href='#'><img src='images/images1.jpeg'></a></li>
+				<li><a href='#'><img src='images/images2.jpeg'></a></li>
+				<li><a href='#'><img src='images/images3.jpeg'></a></li>
+				<li><a href='#'><img src='images/images4.jpeg'></a></li>
+				<li><a href='#'><img src='images/images5.jpeg'></a></li>
+				<li><a href='#'><img src='images/images6.jpeg'></a></li>
+				<li><a href='#'><img src='images/images7.jpeg'></a></li>
+				<li><a href='#'><img src='images/images8.jpeg'></a></li>
+			</ul>		
+		</div>
+	</div>
+</body>
+</html>
