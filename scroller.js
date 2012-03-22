@@ -81,7 +81,7 @@
         scrollableUl = data.scrollableUl,
         scrollAmount = data.scrollAmount,
         numOfPicsVisible = data.options.numOfPicsVisible,
-        numberOfItems = scrollableUl.find('li').size();
+        numberOfItems = scrollableUl.children().size();
 
       // Clamp the index
       if (index <= 0) { 
