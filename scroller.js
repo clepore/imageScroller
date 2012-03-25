@@ -31,23 +31,29 @@
   var methods = {
     init: function(options) {
       options = $.extend({}, $.fn.scroller.defaults, options);
-    
+
       return this.each(function() {
         var self = $(this);
-    
+
+        // Make sure the browser is compatible with the hashchange event when requested
+        if ("onhashchange" in window && options.hashAsPageNumber) {
+          options.hashAsPageNumber = true;
+        }
+
         self.data('scroller',{
           options: options,
           nextButton: $(options.nextButton),
           previousButton: $(options.previousButton),
-          scrollableUl: $(options.scrollableUl)
+          scrollableUl: $(options.scrollableUl),
+          previousUrl: location.pathname
         });
-        
+
         var data = self.data('scroller');
 
-        // If loaded already, then ignore
+        // If the scroller is loaded already, then ignore init
         if (data.scrollerLoaded) {
           return;
-        }    
+        }
         data.scrollerLoaded = true;
 
         // Grab scroll amount from li width
@@ -67,13 +73,22 @@
           methods.gotoPrevious.call(self, currentIdx);
           return false;
         });
+        
+        // Bind to the hash event if using hashes as page numbers
+        if (data.options.hashAsPageNumber) {
+          $(window).bind( 'hashchange', function(e) { 
+            var index =  functions.getPositionFromHash(data.previousUrl);
+            methods.gotoIndex.call(self, index, true);
+          });
+        }
 
-        // Start at zero
-        methods.gotoIndex.call(self, 0);
+        // Start at zero unless hash says otherwise and go to that page without animation
+        var index = (data.options.hashAsPageNumber) ? functions.getPositionFromHash(data.previousUrl) : 0;
+        methods.gotoIndex.call(self, index, false);
       });
     },
 
-    gotoIndex: function(index){
+    gotoIndex: function(index, animateScroll){
       var self = $(this),
         data = self.data('scroller'),
         nextButton = data.nextButton,
@@ -100,9 +115,18 @@
       
       // The position to scroll to and then scroll to it
       var scrollX = index * scrollAmount;
-      scrollableUl.animate({ 'left': -scrollX });
+      if (animateScroll) {
+        scrollableUl.animate({ 'left': -scrollX });
+      } else {
+        scrollableUl.css({ 'left': -scrollX });
+      }
       
-      // Store the scrolled to index
+      // Set the url hash and add one to avoid counting with a 0 index
+      if (data.options.hashAsPageNumber) {
+       window.location.hash = index + 1;
+      }
+      
+      // Store the scrolled-to index
       data.currentIndex = index;
     },
   
@@ -113,7 +137,7 @@
       if(currentIndex == null){
         currentIndex = data.currentIndex;
       }
-      methods.gotoIndex.call(self, currentIndex - 1);
+      methods.gotoIndex.call(self, currentIndex - 1, true);
     },
   
     gotoNext: function(currentIndex) {
@@ -123,11 +147,27 @@
       if(currentIndex == null){
         currentIndex = data.currentIndex;
       }
-      methods.gotoIndex.call(self, currentIndex + 1);
+      methods.gotoIndex.call(self, currentIndex + 1, true);
     }
   };
 
-  var functions = {};
+  var functions = {
+    getPositionFromHash: function(previousUrl) {
+      // Compare current url to previous url
+      if (location.pathname == previousUrl) {
+        var hash = window.location.hash;
+        if (hash != '') {
+          var afterHash = hash.replace( /^#/, '' );
+          var afterHashAsNum = parseInt(afterHash);
+          if (!isNaN(afterHashAsNum)) {
+            // Subtract 1 so it scrolls to 0 scale
+            return (afterHashAsNum - 1);
+          }
+        }
+      }
+      return 0;
+    }
+  };
   
   /**
    * <p>Scroller plugin for a carousel of items.</p>
@@ -138,6 +178,7 @@
    * @param previousButton - the elem that moves to the prev item
    * @param scrollableUl - the list to be scrolled
    * @param numOfPicsVisible - the number of items to show at once
+   * @param hashAsPageNumber - write the page number as a hash in the url
    *
    */
   jQuery.fn.scroller = function(method) {
@@ -155,6 +196,7 @@
     nextButton: $(),
     previousButton: $(),
     scrollableUl: $(),
-    numOfPicsVisible: 1
+    numOfPicsVisible: 1,
+    hashAsPageNumber: false
   };
 })(jQuery);
