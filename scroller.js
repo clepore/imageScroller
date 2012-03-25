@@ -22,7 +22,7 @@
 
 /**
  * @fileOverview A jQuery scroller plugin for a list of items.
- * @version 0.1
+ * @version 1.0
  * @author Christopher Lepore <technology@thewonderfactory.com> 
  */
 
@@ -178,7 +178,7 @@
    * @param previousButton - the elem that moves to the prev item
    * @param scrollableUl - the list to be scrolled
    * @param numOfPicsVisible - the number of items to show at once
-   * @param hashAsPageNumber - write the page number as a hash in the url
+   * @param hashAsPageNumber - write the page number as a navigable hash in the url
    *
    */
   jQuery.fn.scroller = function(method) {
