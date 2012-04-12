@@ -113,6 +113,11 @@
         nextButton.show();
       }
       
+      // Cancel setup if there aren't enough items to scroll
+      if (numberOfItems < numOfPicsVisible) {
+        return false;
+      }
+      
       // The position to scroll to and then scroll to it
       var scrollX = index * scrollAmount;
       if (animateScroll) {
