@@ -22,7 +22,7 @@
 
 /**
  * @fileOverview A jQuery scroller plugin for a list of items.
- * @version 1.0
+ * @version 0.1
  * @author Christopher Lepore <technology@thewonderfactory.com> 
  */
 
@@ -59,10 +59,17 @@
         // Grab scroll amount from li width
         data.scrollAmount = data.scrollableUl.find('li').outerWidth(true);
 
-        //Resize UL to show numOfPicsVisibleVisible
+        //Resize parent of ul to show numOfPicsVisibleVisible
         var newWidth = data.scrollAmount * data.options.numOfPicsVisible;
-        self.css('width', newWidth + 'px' )
-
+        self.css({
+          'width': newWidth + 'px',
+          'overflow' : 'hidden'
+        });
+        
+       //Resize UL to be the right length
+        newWidth = data.scrollAmount * data.scrollableUl.children().length;
+        data.scrollableUl.css('width', newWidth + 'px' );
+      
         // Activate buttons
         data.nextButton.bind('click', function(event, currentIdx) {
           methods.gotoNext.call(self, currentIdx);
@@ -76,14 +83,28 @@
         
         // Bind to the hash event if using hashes as page numbers
         if (data.options.hashAsPageNumber) {
-          $(window).bind( 'hashchange', function(e) { 
+          $(window).bind( 'hashchange', function(e) {
             var index =  functions.getPositionFromHash(data.previousUrl);
-            methods.gotoIndex.call(self, index, true);
+            if (index != null) {
+              methods.gotoIndex.call(self, index, true);
+              
+              $(data.options.paginationContainer)
+                .find('.active')
+                .removeClass('active')
+                .end()
+                .find('[href="#' + (index + 1) + '"]')
+                .addClass('active');
+            }
           });
         }
 
         // Start at zero unless hash says otherwise and go to that page without animation
         var index = (data.options.hashAsPageNumber) ? functions.getPositionFromHash(data.previousUrl) : 0;
+        
+        // Load the first page's images
+        if (data.options.loadImagesLazily) {
+          methods.lazyLoadImages.call(self, index, 1);
+        }
         methods.gotoIndex.call(self, index, false);
       });
     },
@@ -97,7 +118,7 @@
         scrollAmount = data.scrollAmount,
         numOfPicsVisible = data.options.numOfPicsVisible,
         numberOfItems = scrollableUl.children().size();
-
+        
       // Clamp the index
       if (index <= 0) { 
         index = 0;
@@ -116,21 +137,32 @@
       // Cancel setup if there aren't enough items to scroll
       if (numberOfItems < numOfPicsVisible) {
         return false;
-      }
+      } 
       
       // The position to scroll to and then scroll to it
       var scrollX = index * scrollAmount;
       if (animateScroll) {
-        scrollableUl.animate({ 'left': -scrollX });
+        opts = {
+          'duration': 400
+        }
+        
+        if (data.options.loadImagesLazily) {
+          opts.complete = function() {
+            methods.lazyLoadImages.call(self, index, 1);
+          }
+        }
+        
+        // Load other page's images after animate
+        scrollableUl.animate({ 'left': -scrollX }, opts);
       } else {
         scrollableUl.css({ 'left': -scrollX });
       }
       
       // Set the url hash and add one to avoid counting with a 0 index
-      if (data.options.hashAsPageNumber) {
-       window.location.hash = index + 1;
+      if (data.options.hashAsPageNumber && index > 0) {
+        window.location.hash = index + 1;
       }
-      
+
       // Store the scrolled-to index
       data.currentIndex = index;
     },
@@ -142,17 +174,66 @@
       if(currentIndex == null){
         currentIndex = data.currentIndex;
       }
-      methods.gotoIndex.call(self, currentIndex - 1, true);
+      
+      if (data.options.hashAsPageNumber) {
+        // +1 to get the current index to what the user sees, then -1 to go to previous = 0
+        window.location.hash = (currentIndex > 0) ? currentIndex : 0;
+      } else {
+        methods.gotoIndex.call(self, currentIndex - 1, true);
+      }
     },
   
     gotoNext: function(currentIndex) {
-      var self = $(this), 
-        data = self.data('scroller');
+      var self = $(this),
+        data = self.data('scroller'),
+        numberOfItems = data.scrollableUl.children().size();
         
-      if(currentIndex == null){
+      if (currentIndex == null){
         currentIndex = data.currentIndex;
       }
-      methods.gotoIndex.call(self, currentIndex + 1, true);
+      
+      if (data.options.hashAsPageNumber) {
+        // +1 because the user doesn't see a 0-scale, and +1 again to get next page = + 2
+        window.location.hash = (currentIndex < numberOfItems) ? currentIndex + 2 : numberOfItems;
+      } else {
+        methods.gotoIndex.call(self, currentIndex + 1, true);
+      }
+    },
+
+    lazyLoadImages: function(currentIndex, scope) {
+      // Add the img src to each img tag for viewing -
+      var self = $(this),
+        data = self.data('scroller'),
+        scrollableUl = data.scrollableUl,
+        max = scrollableUl.children('li').size(),
+        images = [];
+        
+      // By default get 1 li before and 1 li after the current li.
+      var startPage = currentIndex - scope,
+        endPage = currentIndex + scope;
+      
+      // If we are at the beginning, get the next page
+      if (currentIndex == 0) {
+        startPage = 0;
+        endPage = 1;
+      }
+      
+      // If we are at the end, get the previous page
+      if (currentIndex == max) {
+        startPage = max - scope;
+        endPage = max;
+      }
+
+      // Loop through page range
+      for (var i = startPage; i <= endPage; i++) {
+        li = $(scrollableUl.children('li')[i]);
+        
+        // Set src attribute per image
+        $.each(li.find('img[data-src]'), function() {
+          var elem = $(this);
+          elem.attr('src', elem.attr('data-src')).removeAttr('data-src');
+        });
+      }
     }
   };
 
@@ -170,7 +251,7 @@
           }
         }
       }
-      return 0;
+      return null;
     }
   };
   
@@ -183,7 +264,8 @@
    * @param previousButton - the elem that moves to the prev item
    * @param scrollableUl - the list to be scrolled
    * @param numOfPicsVisible - the number of items to show at once
-   * @param hashAsPageNumber - write the page number as a navigable hash in the url
+   * @param hashAsPageNumber - write the page number as a hash in the url
+   * @param loadImagesLazily - loads images on demand within a page range
    *
    */
   jQuery.fn.scroller = function(method) {
@@ -202,6 +284,8 @@
     previousButton: $(),
     scrollableUl: $(),
     numOfPicsVisible: 1,
-    hashAsPageNumber: false
+    hashAsPageNumber: false,
+    paginationContainer: $(),
+    loadImagesLazily: true
   };
 })(jQuery);
