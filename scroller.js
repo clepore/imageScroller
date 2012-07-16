@@ -87,13 +87,6 @@
             var index =  functions.getPositionFromHash(data.previousUrl);
             if (index != null) {
               methods.gotoIndex.call(self, index, true);
-              
-              $(data.options.paginationContainer)
-                .find('.active')
-                .removeClass('active')
-                .end()
-                .find('[href="#' + (index + 1) + '"]')
-                .addClass('active');
             }
           });
         }
@@ -161,6 +154,16 @@
       // Set the url hash and add one to avoid counting with a 0 index
       if (data.options.hashAsPageNumber && index > 0) {
         window.location.hash = index + 1;
+      }
+      
+      // Mark what page you are on if hash pagination is enabled
+      if (data.options.hashAsPageNumber) {
+        $(data.options.paginationContainer)
+          .find('.active')
+          .removeClass('active')
+          .end()
+          .find('[href="#' + (index + 1) + '"]')
+          .addClass('active');
       }
 
       // Store the scrolled-to index
